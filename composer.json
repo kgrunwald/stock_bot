@@ -1,6 +1,8 @@
 {
     "type": "project",
     "license": "proprietary",
+    "name": "kgrunwald/stock_bot",
+    "description": "bot stocking",
     "require": {
         "php": ">=7.2.5",
         "ext-ctype": "*",

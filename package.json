@@ -16,8 +16,7 @@
         "dev-server": "encore dev-server",
         "dev": "encore dev",
         "watch": "encore dev --watch",
-        "build": "encore production --progress",
-        "heroku-postbuild" : "encore production"
+        "build": "encore production --progress"
     },
     "dependencies": {
         "@babel/plugin-proposal-class-properties": "^7.12.1",

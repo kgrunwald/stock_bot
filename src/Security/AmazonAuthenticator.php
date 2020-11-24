@@ -54,12 +54,12 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
         }
 
         $info = $this->getUserInfo($credentials);
-        $username = $info['username'];
+        $email = $info['email'];
 
-        $user = $this->userRepo->findOneBy(['username' => $username]);
+        $user = $this->userRepo->findOneBy(['email' => $email]);
         if (!$user) {
             $user = new User();
-            $user->setUsername($username);
+            $user->setName($info['name']);
             $user->setEmail($info['email']);
             $user->setSubId($info['sub']);
             $this->em->persist($user);
@@ -76,7 +76,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $targetUrl = $this->router->generate('home');
+        $targetUrl = $this->router->generate('home', ['reactRouting' => 'account']);
         return new RedirectResponse($targetUrl);
     }
 
@@ -113,7 +113,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     private function getAccessToken(string $code)
     {
-        $res = $this->client->request('POST', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/token', [
+        $res = $this->client->request('POST', $_ENV['COGNITO_AUTH_DOMAIN'] . '/oauth2/token', [
             'headers' => [
                 'Authorization' => 'Basic ' . base64_encode($_ENV['COGNITO_CLIENT_ID'] . ":" . $_ENV['COGNITO_CLIENT_SECRET']),
                 'Content-Type' => 'application/x-www-form-urlencoded'
@@ -136,7 +136,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     private function getUserInfo(string $token)
     {
-        $res = $this->client->request('GET', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/userInfo', [
+        $res = $this->client->request('GET', $_ENV['COGNITO_AUTH_DOMAIN'] . '/oauth2/userInfo', [
             'headers' => [
                 'Authorization' => "Bearer {$token}",
             ]

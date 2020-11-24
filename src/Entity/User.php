@@ -30,9 +30,9 @@ class User implements UserInterface
     private $roles = [];
 
     /**
-     * @ORM\Column(type="string", unique=true, length=255)
+     * @ORM\Column(type="string", length=255)
      */
-    private $username;
+    private $name;
 
     /**
      * @ORM\Column(type="string", unique=true, length=36)
@@ -63,12 +63,7 @@ class User implements UserInterface
      */
     public function getUsername(): string
     {
-        return (string) $this->username;
-    }
-
-    public function setUsername(string $username)
-    {
-        $this->username = $username;
+        return (string) $this->email;
     }
 
     public function getSubId(): ?string
@@ -80,6 +75,17 @@ class User implements UserInterface
     {
         $this->subId = $subId;
 
+        return $this;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
         return $this;
     }
 
@@ -127,7 +133,8 @@ class User implements UserInterface
         // $this->plainPassword = null;
     }
 
-    public function toArray(): array {
+    public function toArray(): array
+    {
         return [
             'username' => $this->getUsername(),
             'email' => $this->getEmail(),

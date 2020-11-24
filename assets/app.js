@@ -1,9 +1,13 @@
-// ./src/js/app.js
-    
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { BrowserRouter as Router } from 'react-router-dom';
-import './styles/app.css';
-import Home from './components/Home';
-    
-ReactDOM.render(<Router><Home /></Router>, document.getElementById('root'));
+import { Route, Switch } from 'react-router-dom';
+import HomePage from './pages/HomePage'
+import AccountPage from './pages/AccountPage';
+
+export default () => {
+    return (
+        <Switch>
+            <Route path="/" exact component={HomePage} />
+            <Route path="/account" component={AccountPage} />
+        </Switch>
+    )
+}

@@ -111,6 +111,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
     }
 
     private function getAccessToken(string $code) {
+        $res = [];
         try {
             $res = $this->client->request('POST', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/token', [
                 'headers' => [
@@ -127,7 +128,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
     
             return $res->toArray()['access_token'];
         } catch (\Exception $e) {
-            $this->logger->error("Failed getting access token", ['err' => $e->getMessage()]);
+            $this->logger->error("Failed getting access token", ['err' => $e->getMessage(), 'data' => $res->toArray()]);
             return null;
         }
     }

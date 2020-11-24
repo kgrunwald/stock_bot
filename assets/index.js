@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage'
 import AccountPage from './pages/AccountPage';
 
 import 'antd/dist/antd.css';
+import './styles/app.css';
 
 
 const App = () => {

@@ -5,7 +5,6 @@
         "@babel/preset-env": "^7.12.7",
         "@babel/preset-react": "^7.12.7",
         "@symfony/webpack-encore": "^0.31.0",
-        "axios": "^0.21.0",
         "core-js": "^3.0.0",
         "prop-types": "^15.7.2",
         "react": "^17.0.1",
@@ -22,6 +21,7 @@
         "build": "encore production --progress"
     },
     "dependencies": {
+        "@ant-design/icons": "^4.3.0",
         "@babel/plugin-proposal-class-properties": "^7.12.1",
         "@babel/plugin-transform-runtime": "^7.12.1",
         "antd": "^4.8.5",

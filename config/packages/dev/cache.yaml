@@ -1,0 +1,12 @@
+framework:
+    cache:
+        prefix_seed: kgrunwald/stock_bot
+
+        app: cache.adapter.filesystem
+        system: cache.adapter.system
+
+        pools:
+            doctrine.result_cache_pool:
+                adapter: cache.app
+            doctrine.system_cache_pool:
+                adapter: cache.system

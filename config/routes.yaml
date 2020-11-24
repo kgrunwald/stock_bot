@@ -16,7 +16,7 @@ auth_callback:
 
 auth_logout:
     path: /auth/logout
-    methods: [GET]
+    methods: [GET,POST]
 
 get_user:
   path: /api/user

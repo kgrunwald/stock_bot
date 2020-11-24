@@ -31,8 +31,7 @@ class Home extends Component {
     }
 
     signOut = async () => {
-        await fetch("/auth/logout", { method: 'post' });
-        window.location.assign("/");
+        window.location.assign("/auth/logout");
     }
 
     render() {

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Security;
 
 use App\Entity\User;
@@ -54,7 +55,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
         $info = $this->getUserInfo($credentials);
         $username = $info['username'];
-        
+
         $user = $this->userRepo->findOneBy(['username' => $username]);
         if (!$user) {
             $user = new User();
@@ -110,30 +111,31 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
         return false;
     }
 
-    private function getAccessToken(string $code) {
-        $res = [];
-        try {
-            $res = $this->client->request('POST', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/token', [
-                'headers' => [
-                    'Authorization' => 'Basic '.base64_encode($_ENV['COGNITO_CLIENT_ID'] . ":" . $_ENV['COGNITO_CLIENT_SECRET']),
-                    'Content-Type' => 'application/x-www-form-urlencoded'
-                ],
-                'body' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $_ENV['COGNITO_CLIENT_ID'],
-                    'redirect_uri' => $_ENV['COGNITO_REDIRECT_URI'],
-                    'code' => $code,
-                ]
-            ]);
-    
-            return $res->toArray()['access_token'];
-        } catch (\Exception $e) {
-            $this->logger->error("Failed getting access token", ['err' => $e->getMessage(), 'data' => $res->toArray()]);
+    private function getAccessToken(string $code)
+    {
+        $res = $this->client->request('POST', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/token', [
+            'headers' => [
+                'Authorization' => 'Basic ' . base64_encode($_ENV['COGNITO_CLIENT_ID'] . ":" . $_ENV['COGNITO_CLIENT_SECRET']),
+                'Content-Type' => 'application/x-www-form-urlencoded'
+            ],
+            'body' => [
+                'grant_type' => 'authorization_code',
+                'client_id' => $_ENV['COGNITO_CLIENT_ID'],
+                'redirect_uri' => $_ENV['COGNITO_REDIRECT_URI'],
+                'code' => $code,
+            ]
+        ]);
+
+        if ($res->getStatusCode() !== 200) {
+            $this->logger->error("Failed getting access token", ['err' => $res->toArray()]);
             return null;
         }
+
+        return $res->toArray()['access_token'];
     }
 
-    private function getUserInfo(string $token) {
+    private function getUserInfo(string $token)
+    {
         $res = $this->client->request('GET', 'https://jk-invest.auth.us-west-2.amazoncognito.com/oauth2/userInfo', [
             'headers' => [
                 'Authorization' => "Bearer {$token}",

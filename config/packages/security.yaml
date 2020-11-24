@@ -14,7 +14,6 @@ security:
             lazy: true
             logout:
                 path: auth_logout
-                target: home
 
             guard:
                 authenticators:

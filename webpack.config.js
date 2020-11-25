@@ -1,5 +1,6 @@
 var Encore = require('@symfony/webpack-encore');
 
+
 // Manually configure the runtime environment if not already configured yet by the "encore" command.
 // It's useful when you use tools that rely on webpack.config.js file.
 if (!Encore.isRuntimeEnvironmentConfigured()) {
@@ -12,6 +13,10 @@ Encore
     // public path used by the web server to access the output path
     .setPublicPath('/build')
     .enableReactPreset()
+    .enableLessLoader((options) => {
+        options.lessOptions = {javascriptEnabled: true};
+        return options;
+    })
     // only needed for CDN's or sub-directory deploy
     //.setManifestKeyPrefix('build/')
     

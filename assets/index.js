@@ -4,8 +4,8 @@ import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import HomePage from './pages/HomePage'
 import AccountPage from './pages/AccountPage';
 
-import 'antd/dist/antd.css';
-import './styles/app.css';
+// import 'antd/dist/antd.css';
+import './styles/theme.less';
 
 
 const App = () => {

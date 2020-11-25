@@ -1,9 +1,3 @@
-home:
-  path: /{reactRouting}
-  controller: App\Controller\DefaultController::index
-  defaults: 
-    reactRouting: null
-
 auth_redirect:
   path: /auth/login
   methods: [POST]
@@ -27,3 +21,9 @@ get_users:
   path: /api/users
   methods: [GET]
   controller: App\Controller\DefaultController::getUsers
+
+home:
+  path: /{reactRouting}
+  controller: App\Controller\DefaultController::index
+  requirements:
+    reactRouting: .*

@@ -1,89 +1,45 @@
-import { Avatar, Button, Col, Layout, Menu, Row, Space, Typography } from 'antd';
-import React, { Component } from 'react';
-import {HomeOutlined, RobotOutlined, StockOutlined, UserOutlined} from '@ant-design/icons';
-import { Redirect } from 'react-router-dom';
+import { Layout, Typography } from 'antd';
+import React from 'react';
+import AppBar from '../components/AppBar';
+import GoalsMenu from '../components/GoalsMenu/GoalsMenu';
+import Home from './Account/Home';
+import { Route, Switch } from 'react-router-dom';
+import GoalDetail from './Account/GoalDetail';
 
-const { Header, Content, Sider, Footer } = Layout;
+const { Header, Content, Sider } = Layout;
 const { Title } = Typography;
 
+const goals = [
+    { id: 1, name: 'Test Goal', type: '3% Signal', balance: '$12,420.12', drift: '3.2%' },
+    { id: 2, name: 'Banana Stand', type: 'StockBot', balance: '$24,6320.43', drift: '-0.2%' },
+    { id: 3, name: 'Vegas Fund', type: 'StockBot', balance: '$7,324.42', drift: '-0.2%' }
+];
 
-class AccountPage extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { loginError: null };
+const AccountPage = ({ history }) => {
+    function handleGoalClick(id) {
+        history.push(`/account/goal/${id}`);
     }
 
-    async componentDidMount() {
-        const res = await fetch("/api/user");
-        if (res.status !== 200) {
-            this.setState({
-                ...this.state,
-                loginError: true,
-            })
-        }
+    function handleHomeClick() {
+        history.push("/account");
     }
 
-    signOut = async () => {
-        await fetch("/auth/logout", { method: 'post' });
-        window.location.assign("/"); // hard reload to home page
-    }
-
-    render() {
-        if (this.state.loginError) {
-            return <Redirect to="/" />
-        }
-
-        return (
-            <Layout style={{height: '100%'}}>
-                <Header style={{height: 'auto'}}>
-                    <Row justify="space-between" align="middle">
-                        <Col justify="center" style={{marginLeft: -24}}>
-                            <Row>
-                            <Space style={{marginTop: 4}}>
-                                <RobotOutlined style={{color:"white", fontSize: 24}} />
-                                <Title level={4} style={{color: 'white', marginTop: 4}}>Stockbot</Title>
-                            </Space>
-                            </Row>
-                        </Col>
-                        <Col>
-                            <Row>
-                            <Menu theme="dark" mode="horizontal"></Menu>
-                            <Space size={12}>
-                                <Avatar size="large" icon={<UserOutlined />} />
-                                <Button ghost onClick={this.signOut}>Sign Out</Button>
-                            </Space>
-                            </Row>
-                        </Col>
-                    </Row>
-                </Header>
-                <Layout>
-                    <Sider width={200} className="site-layout-background">
-                        <Menu
-                            mode="inline"
-                            style={{ height: '100%', borderRight: 0 }}
-                            defaultSelectedKeys={["1"]}
-                        >
-                            <Menu.Item key="1" icon={<HomeOutlined/>}>
-                                Home
-                            </Menu.Item>
-                        </Menu>
-                    </Sider>
-                    <Layout style={{ padding: '0 24px 24px' }}>
-                    <Content
-                        className="site-layout-background"
-                        style={{
-                            padding: 24,
-                            margin: 0,
-                            minHeight: 280,
-                        }}
-                    >
-                        Content
-                     </Content>
-                </Layout>
-                </Layout>
+    return (
+        <Layout style={{ height: '100%' }}>
+            <Header style={{ height: 'auto' }}>
+                <AppBar />
+            </Header>
+            <Layout>
+                <Sider width={250} className="site-layout-background">
+                    <GoalsMenu goals={goals} onHomeClick={handleHomeClick} onGoalClick={handleGoalClick}/>
+                </Sider>
+                <Switch>
+                    <Route exact path="/account" component={() => <Home goals={goals} />} />
+                    <Route path="/account/goal" component={() => <GoalDetail goals={goals} />} />
+                </Switch>
             </Layout>
-        )
-    }
-}
+        </Layout>
+    )
+};
 
 export default AccountPage;

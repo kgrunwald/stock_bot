@@ -3,7 +3,7 @@ framework:
         prefix_seed: kgrunwald/stock_bot
 
         # Redis
-        app: cache.adapter.redis
-        default_redis_provider: '%env(resolve:REDIS_URL)%'
+        # app: cache.adapter.redis
+        # default_redis_provider: '%env(resolve:REDIS_URL)%'
 
-        system: cache.adapter.system
+        # system: cache.adapter.system

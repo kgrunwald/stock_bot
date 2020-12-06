@@ -1,0 +1,3 @@
+aws:
+    version: latest
+    region: us-west-2

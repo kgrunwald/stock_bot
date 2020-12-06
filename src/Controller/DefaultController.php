@@ -2,62 +2,60 @@
 
 namespace App\Controller;
 
+use App\DTO\RegisterUserRequest;
+use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Exception\BadRequestException;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DefaultController extends AbstractController
 {
+    private RouterInterface $router;
+    private ValidatorInterface $validator;
+    private SerializerInterface $serializer;
+    private UserService $userService;
+
+    public function __construct(RouterInterface $router, ValidatorInterface $validator, SerializerInterface $serializer, UserService $userService)
+    {
+        $this->router = $router;
+        $this->validator = $validator;
+        $this->serializer = $serializer;
+        $this->userService = $userService;
+    }
+
     public function index()
     {
         return $this->render('default/index.html.twig');
     }
 
-    public function getUserHandler(): Response {
-        return $this->json($this->getUser());
+    public function ping() {
+        return $this->json(['ping' => 'pong']);
     }
 
-    public function getUsers()
+    public function register(Request $request) {
+        $req = $this->serializer->deserialize($request->getContent(), RegisterUserRequest::class, 'json');
+        $errors = $this->validator->validate($req);
+        if (count($errors) > 0) {
+            throw new BadRequestException((string) $errors);
+        }
+
+        $this->userService->registerUser($req);
+
+        $targetUrl = $this->router->generate('home', ['reactRouting' => 'account']);
+        return $this->json(['url' => $targetUrl]);
+    }
+
+    public function getAllPlans()
     {
-        $users = [
-            [
-                'id' => 1,
-                'name' => 'Olususi Oluyemi',
-                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation',
-                'imageURL' => 'https://randomuser.me/api/portraits/women/50.jpg'
-            ],
-            [
-                'id' => 2,
-                'name' => 'Camila Terry',
-                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation',
-                'imageURL' => 'https://randomuser.me/api/portraits/men/42.jpg'
-            ],
-            [
-                'id' => 3,
-                'name' => 'Joel Williamson',
-                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation',
-                'imageURL' => 'https://randomuser.me/api/portraits/women/67.jpg'
-            ],
-            [
-                'id' => 4,
-                'name' => 'Deann Payne',
-                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation',
-                'imageURL' => 'https://randomuser.me/api/portraits/women/50.jpg'
-            ],
-            [
-                'id' => 5,
-                'name' => 'Donald Perkins',
-                'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation',
-                'imageURL' => 'https://randomuser.me/api/portraits/men/89.jpg'
-            ]
-        ];
-    
-        $response = new Response();
+        $plans = $this->userService->getAllPlans();
+        return $this->json($plans);
+    }
 
-        $response->headers->set('Content-Type', 'application/json');
-        $response->headers->set('Access-Control-Allow-Origin', '*');
-
-        $response->setContent(json_encode($users));
-        
-        return $response;
+    public function getUserHandler(): Response {
+        return $this->json($this->getUser());
     }
 }

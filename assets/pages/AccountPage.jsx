@@ -1,13 +1,12 @@
 import { Layout, Typography } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import AppBar from '../components/AppBar';
 import GoalsMenu from '../components/GoalsMenu/GoalsMenu';
 import Home from './Account/Home';
 import { Route, Switch } from 'react-router-dom';
 import GoalDetail from './Account/GoalDetail';
 
-const { Header, Content, Sider } = Layout;
-const { Title } = Typography;
+const { Header, Sider } = Layout;
 
 const goals = [
     { id: 1, name: 'Test Goal', type: '3% Signal', balance: '$12,420.12', drift: '3.2%' },
@@ -15,8 +14,11 @@ const goals = [
     { id: 3, name: 'Vegas Fund', type: 'StockBot', balance: '$7,324.42', drift: '-0.2%' }
 ];
 
-const AccountPage = ({ history }) => {
-    function handleGoalClick(id) {
+const AccountPage = ({history}) => {
+    const [goal, setGoal] = useState(null);
+
+    async function handleGoalClick(id) {
+        await setGoal(goals[id - 1]);
         history.push(`/account/goal/${id}`);
     }
 
@@ -35,7 +37,7 @@ const AccountPage = ({ history }) => {
                 </Sider>
                 <Switch>
                     <Route exact path="/account" component={() => <Home goals={goals} />} />
-                    <Route path="/account/goal" component={() => <GoalDetail goals={goals} />} />
+                    <Route path="/account/goal" component={() => <GoalDetail goal={goal} onBack={() => history.goBack()} />} />
                 </Switch>
             </Layout>
         </Layout>

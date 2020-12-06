@@ -6,6 +6,7 @@ import AccountPage from './pages/AccountPage';
 
 // import 'antd/dist/antd.css';
 import './styles/theme.less';
+import RegisterPage from './pages/Register';
 
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
         <Switch>
             <Route path="/" exact component={HomePage} />
             <Route path="/account" component={AccountPage} />
+            <Route path="/register" component={RegisterPage} />
         </Switch>
     )
 }

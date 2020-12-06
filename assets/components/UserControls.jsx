@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, Button, Menu, Space } from 'antd';
 import { UserOutlined} from '@ant-design/icons';
-import { Redirect } from 'react-router-dom';
 
 
 const UserControls = () => {
@@ -27,6 +26,7 @@ const UserControls = () => {
     }
 
     useEffect(async () => {
+        await fetch('/api/plans');
         const res = await fetch("/api/user");
         if (res.status === 200) {
             await setUser(await res.json());

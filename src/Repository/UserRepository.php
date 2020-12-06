@@ -3,48 +3,37 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Persistence\ManagerRegistry;
+use DateTime;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 
-/**
- * @method User|null find($id, $lockMode = null, $lockVersion = null)
- * @method User|null findOneBy(array $criteria, array $orderBy = null)
- * @method User[]    findAll()
- * @method User[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
-class UserRepository extends ServiceEntityRepository
+class UserRepository extends DynamoRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    const SORT_KEY_PROFILE = 'profile';
+    const DATE_FORMAT = 'Y-m-d H:i:s';
+
+    public function getType()
     {
-        parent::__construct($registry, User::class);
+        return User::class;
     }
 
-    // /**
-    //  * @return User[] Returns an array of User objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function getPK($user)
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('u.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        /** @var User $user */
+        return $user->getId();
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?User
+    public function getSK($item)
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        return self::SORT_KEY_PROFILE;
     }
-    */
+
+    public function getContext(): array 
+    {
+        return [AbstractNormalizer::IGNORED_ATTRIBUTES => ['password', 'salt', 'goals', 'newRecord']];
+    }
+
+    public function getByAccountId(string $accountId): ?User
+    {
+        return $this->getByKeys($accountId, self::SORT_KEY_PROFILE);
+    }
 }

@@ -2,47 +2,20 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-/**
- * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(name="`user`")
- * @ORM\Cache
- */
-class User implements UserInterface
+class User extends Entity implements UserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    const STATUS_ACTIVE = "ACTIVE";
 
-    /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     */
     private $email;
-
-    /**
-     * @ORM\Column(type="json")
-     */
     private $roles = [];
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
     private $name;
+    private $status = self::STATUS_ACTIVE;
 
-    /**
-     * @ORM\Column(type="string", unique=true, length=36)
-     */
-    private $subId;
-
-    public function getId(): ?int
+    public function __construct()
     {
-        return $this->id;
+        $this->goals = [];
     }
 
     public function getEmail(): ?string
@@ -50,49 +23,29 @@ class User implements UserInterface
         return $this->email;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
 
         return $this;
     }
 
-    /**
-     * A visual identifier that represents this user.
-     *
-     * @see UserInterface
-     */
     public function getUsername(): string
     {
-        return (string) $this->email;
+        return (string) $this->email ? $this->email : $this->id;
     }
 
-    public function getSubId(): ?string
-    {
-        return $this->subId;
-    }
-
-    public function setSubId(string $subId): self
-    {
-        $this->subId = $subId;
-
-        return $this;
-    }
-
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getRoles(): array
     {
         $roles = $this->roles;
@@ -109,37 +62,30 @@ class User implements UserInterface
         return $this;
     }
 
-    /**
-     * @see UserInterface
-     */
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
     public function getPassword()
     {
         // not needed for apps that do not check user passwords
     }
 
-    /**
-     * @see UserInterface
-     */
     public function getSalt()
     {
         // not needed for apps that do not check user passwords
     }
 
-    /**
-     * @see UserInterface
-     */
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'username' => $this->getUsername(),
-            'email' => $this->getEmail(),
-            'id' => $this->getId()
-        ];
     }
 }

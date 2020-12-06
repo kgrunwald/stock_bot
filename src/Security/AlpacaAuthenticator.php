@@ -3,7 +3,7 @@
 namespace App\Security;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\DbContext;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,24 +15,23 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use App\Repository\UserRepository;
 use Psr\Log\LoggerInterface;
 
-class AmazonAuthenticator extends AbstractGuardAuthenticator
+class AlpacaAuthenticator extends AbstractGuardAuthenticator
 {
-    private UserRepository $userRepo;
-    private EntityManagerInterface $em;
+    private DbContext $dbContext;
     private HttpClientInterface $client;
     private RouterInterface $router;
     private LoggerInterface $logger;
+    private string $secret;
 
-    public function __construct(UserRepository $userRepo, EntityManagerInterface $em, HttpClientInterface $client, RouterInterface $router, LoggerInterface $logger)
+    public function __construct(string $secret, DbContext $dbContext, HttpClientInterface $client, RouterInterface $router, LoggerInterface $logger)
     {
-        $this->userRepo = $userRepo;
-        $this->em = $em;
+        $this->dbContext = $dbContext;
         $this->client = $client;
         $this->router = $router;
         $this->logger = $logger;
+        $this->secret = $secret;
     }
 
     public function supports(Request $request)
@@ -54,16 +53,14 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
         }
 
         $info = $this->getUserInfo($credentials);
-        $email = $info['email'];
+        $accountId = $info['id'];
 
-        $user = $this->userRepo->findOneBy(['email' => $email]);
+        $user = $this->dbContext->users->getByAccountId($accountId);
         if (!$user) {
             $user = new User();
-            $user->setName($info['name']);
-            $user->setEmail($info['email']);
-            $user->setSubId($info['sub']);
-            $this->em->persist($user);
-            $this->em->flush();
+            $user->setId($accountId);
+            $this->dbContext->users->add($user);
+            $this->dbContext->commit();
         }
 
         return $user;
@@ -76,18 +73,20 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $targetUrl = $this->router->generate('home', ['reactRouting' => 'account']);
+        $user = $token->getUser();
+        if (strpos($user->getUsername(), '@') > 0) {
+            $targetUrl = $this->router->generate('home', ['reactRouting' => 'account']);
+            return new RedirectResponse($targetUrl);
+        }
+
+        $targetUrl = $this->router->generate('home', ['reactRouting' => 'register']);
         return new RedirectResponse($targetUrl);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         $data = [
-            // you may want to customize or obfuscate the message first
             'message' => strtr($exception->getMessageKey(), $exception->getMessageData())
-
-            // or to translate this message
-            // $this->translator->trans($exception->getMessageKey(), $exception->getMessageData())
         ];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
@@ -113,16 +112,16 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     private function getAccessToken(string $code)
     {
-        $res = $this->client->request('POST', $_ENV['COGNITO_AUTH_DOMAIN'] . '/oauth2/token', [
+        $res = $this->client->request('POST', $_ENV['ALPACA_OAUTH_TOKEN_DOMAIN'] . '/oauth/token', [
             'headers' => [
-                'Authorization' => 'Basic ' . base64_encode($_ENV['COGNITO_CLIENT_ID'] . ":" . $_ENV['COGNITO_CLIENT_SECRET']),
-                'Content-Type' => 'application/x-www-form-urlencoded'
+                'Content-Type' => 'application/x-www-form-urlencoded',
             ],
             'body' => [
                 'grant_type' => 'authorization_code',
-                'client_id' => $_ENV['COGNITO_CLIENT_ID'],
-                'redirect_uri' => $_ENV['COGNITO_REDIRECT_URI'],
                 'code' => $code,
+                'client_id' => $_ENV['ALPACA_OAUTH_CLIENT_ID'],
+                'client_secret' => $this->secret,
+                'redirect_uri' => $_ENV['ALPACA_OAUTH_REDIRECT_URI'],
             ]
         ]);
 
@@ -136,7 +135,7 @@ class AmazonAuthenticator extends AbstractGuardAuthenticator
 
     private function getUserInfo(string $token)
     {
-        $res = $this->client->request('GET', $_ENV['COGNITO_AUTH_DOMAIN'] . '/oauth2/userInfo', [
+        $res = $this->client->request('GET', $_ENV['ALPACA_DOMAIN'] . '/v2/account', [
             'headers' => [
                 'Authorization' => "Bearer {$token}",
             ]

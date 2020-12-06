@@ -22,6 +22,21 @@ get_users:
   methods: [GET]
   controller: App\Controller\DefaultController::getUsers
 
+register: 
+  path: /api/register
+  methods: [POST]
+  controller: App\Controller\DefaultController::register
+
+ping:
+  path: /ping
+  methods: [GET]
+  controller: App\Controller\DefaultController::ping
+
+getPlans:
+  path: /api/plans
+  methods: [GET]
+  controller: App\Controller\DefaultController::getAllPlans
+
 home:
   path: /{reactRouting}
   controller: App\Controller\DefaultController::index

@@ -60,4 +60,9 @@ Encore
     })
 ;
 
+if(Encore.isProduction()) {
+    Encore.setPublicPath('https://d1btkq8fkmgdab.cloudfront.net/assets/');
+    Encore.setManifestKeyPrefix('');
+}
+
 module.exports = Encore.getWebpackConfig();

@@ -10,11 +10,11 @@ class Oauth2Controller extends AbstractController
 {
     public function redirectToAuthentication(): Response
     {
-        $url = $_ENV['COGNITO_AUTH_DOMAIN'] . '/oauth2/authorize?'.http_build_query(array(
+        $url = $_ENV['ALPACA_OAUTH_AUTH_DOMAIN'] . '/oauth/authorize?'.http_build_query(array(
             'response_type' => 'code',
-            'client_id' => $_ENV['COGNITO_CLIENT_ID'],
-            'redirect_uri' => $_ENV['COGNITO_REDIRECT_URI'],
-            'scope' => 'openid profile email'
+            'client_id' => $_ENV['ALPACA_OAUTH_CLIENT_ID'],
+            'redirect_uri' => $_ENV['ALPACA_OAUTH_REDIRECT_URI'],
+            'scope' => 'data account:write'
         ));
     
         return $this->json(['url' => $url]);

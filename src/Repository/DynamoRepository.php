@@ -36,31 +36,24 @@ abstract class DynamoRepository
         $this->putItems = [];
     }
 
-    public abstract function getType();
-
-    protected function unmarshal(Result $result, string $type = null): object
+    protected function unmarshal(Result $result): object
     {
-       return $this->unmarshalItem($result['Item'], $type);
+       return $this->unmarshalItem($result['Item']);
     }
 
-    protected function unmarshalArray(Result $result, string $type = null): array
+    protected function unmarshalArray(Result $result): array
     {
         $objects = [];
         foreach ($result['Items'] as $item) {
-            $objects []= $this->unmarshalItem($item, $type);
+            $objects []= $this->unmarshalItem($item);
         }
 
         return $objects;
     }
 
-    protected function unmarshalItem(array $item, ?string $type = null) {
+    protected function unmarshalItem(array $item) {
         $data = $this->marshaler->unmarshalItem($item);
-
-        if ($type === null) {
-            $type = $this->getType();
-        }
-
-        return $this->denormalizer->denormalize($data, $type);
+        return $this->denormalizer->denormalize($data, $data['_t']);
     }
 
     public function add($entity)

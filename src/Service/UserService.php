@@ -38,4 +38,10 @@ class UserService
     {
         return $this->dbContext->plans->getAll();
     }
+
+    public function getAllGoals(): array
+    {
+        $user = $this->securityService->getUser();
+        return $this->dbContext->goals->getAllGoalsForUser($user);
+    }
 }

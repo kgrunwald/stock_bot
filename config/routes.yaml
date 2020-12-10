@@ -37,6 +37,11 @@ getPlans:
   methods: [GET]
   controller: App\Controller\DefaultController::getAllPlans
 
+getGoals:
+  path: /api/goals
+  methods: [GET]
+  controller: App\Controller\DefaultController::getAllGoals
+
 home:
   path: /{reactRouting}
   controller: App\Controller\DefaultController::index

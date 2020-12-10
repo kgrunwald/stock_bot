@@ -9,6 +9,16 @@ class Security
     private $type;
     private $class;
 
+    public function getId(): string
+    {
+        return $this->getSymbol();
+    }
+
+    public function setId(string $id): self
+    {
+        return $this->setSymbol($id);
+    }
+
     public function getName(): string
     {
         return $this->name;

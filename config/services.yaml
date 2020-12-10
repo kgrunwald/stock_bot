@@ -40,3 +40,8 @@ services:
     App\Security\AlpacaAuthenticator:
         arguments:
             $secret: '%app.alpaca.client_secret%'
+
+    # App\Repository\EntityNormalizer:
+        # tags: []
+    #         - name: serializer.normalizer
+    #         - name: serializer.denormalizer

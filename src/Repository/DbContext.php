@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use Aws\DynamoDb\DynamoDbClient;
 use Aws\DynamoDb\Marshaler;
+use Exception;
 use GuzzleHttp\Promise\Promise;
 use GuzzleHttp\Promise\Utils;
 use Psr\Log\LoggerInterface;
@@ -15,10 +16,11 @@ class DbContext
     public UserRepository $users;
     public SecurityRepository $securities;
     public PlanRepository $plans;
+    public GoalRepository $goals;
 
     private DynamoDbClient $dbClient;
 
-    public function __construct(DynamoDbClient $dbClient, LoggerInterface $logger, UserRepository $userRepo, SecurityRepository $securityRepo, PlanRepository $planRepo)
+    public function __construct(DynamoDbClient $dbClient, LoggerInterface $logger, UserRepository $userRepo, SecurityRepository $securityRepo, PlanRepository $planRepo, GoalRepository $goals)
     {
         $this->dbClient = $dbClient;
         $this->logger = $logger;
@@ -26,12 +28,17 @@ class DbContext
         $this->users = $userRepo;
         $this->securities = $securityRepo;
         $this->plans = $planRepo;
+        $this->goals = $goals;
     }
 
     public function commit()
     {
-        $promise = $this->commitAsync();
-        $promise->wait();
+        try {
+            $promise = $this->commitAsync();
+        $promise->wait(true);
+        } catch(Exception $e) {
+            $this->logger->error('error', ['e' => $e->getMessage()]);
+        }
     }
 
     public function commitAsync(): Promise
@@ -57,6 +64,7 @@ class DbContext
         $updates = $this->users->getUpdateItems();
         $updates = array_merge($updates, $this->securities->getUpdateItems());
         $updates = array_merge($updates, $this->plans->getUpdateItems());
+        $updates = array_merge($updates, $this->goals->getUpdateItems());
 
         return array_map(function ($item) {
             return [

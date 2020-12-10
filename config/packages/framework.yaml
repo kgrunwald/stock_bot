@@ -17,5 +17,5 @@ framework:
         log: true
 
     serializer:
-        circular_reference_handler: 'App\Serializer\CircularReferenceHandler'
-        name_converter: 'App\Repository\EntityNameConverter'
+        # circular_reference_handler: 'App\Serializer\CircularReferenceHandler'
+        # name_converter: 'App\Repository\EntityNameConverter'

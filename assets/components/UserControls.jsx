@@ -26,7 +26,6 @@ const UserControls = () => {
     }
 
     useEffect(async () => {
-        await fetch('/api/plans');
         const res = await fetch("/api/user");
         if (res.status === 200) {
             await setUser(await res.json());

@@ -13,11 +13,6 @@ class User extends Entity implements UserInterface
     private $name;
     private $status = self::STATUS_ACTIVE;
 
-    public function __construct()
-    {
-        $this->goals = [];
-    }
-
     public function getEmail(): ?string
     {
         return $this->email;

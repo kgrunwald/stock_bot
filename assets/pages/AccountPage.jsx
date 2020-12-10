@@ -1,5 +1,5 @@
 import { Layout, Typography } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AppBar from '../components/AppBar';
 import GoalsMenu from '../components/GoalsMenu/GoalsMenu';
 import Home from './Account/Home';
@@ -8,13 +8,8 @@ import GoalDetail from './Account/GoalDetail';
 
 const { Header, Sider } = Layout;
 
-const goals = [
-    { id: 1, name: 'Test Goal', type: '3% Signal', balance: '$12,420.12', drift: '3.2%' },
-    { id: 2, name: 'Banana Stand', type: 'StockBot', balance: '$24,6320.43', drift: '-0.2%' },
-    { id: 3, name: 'Vegas Fund', type: 'StockBot', balance: '$7,324.42', drift: '-0.2%' }
-];
-
 const AccountPage = ({history}) => {
+    const [goals, setGoals] = useState([]);
     const [goal, setGoal] = useState(null);
 
     async function handleGoalClick(id) {
@@ -25,6 +20,13 @@ const AccountPage = ({history}) => {
     function handleHomeClick() {
         history.push("/account");
     }
+
+    useEffect(async () => {
+        const goals = await fetch('/api/goals');
+        if (goals.status === 200) {
+            setGoals(await goals.json());
+        }
+    }, []);
 
     return (
         <Layout style={{ height: '100%' }}>

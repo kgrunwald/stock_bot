@@ -24,6 +24,7 @@ abstract class DynamoRepository
 
     const TABLENAME = 'jk-stockbot';
     const GSI1 = 'GSI1';
+    const GSI2 = 'GSI2';
 
     public function __construct(DynamoDbClient $dbClient, LoggerInterface $logger, NormalizerInterface $normalizer, DenormalizerInterface $denormalizer)
     {
@@ -35,22 +36,6 @@ abstract class DynamoRepository
         $this->putItems = [];
     }
 
-    public function getPK($item)
-    {
-        throw new \Exception('Need to get user');
-    }
-
-    public function getContext(): array
-    {
-        return [];
-    }
-
-    public function getExtraAttributes(): array
-    {
-        return [];
-    }
-
-    public abstract function getSK($item);
     public abstract function getType();
 
     protected function unmarshal(Result $result, string $type = null): object
@@ -78,22 +63,10 @@ abstract class DynamoRepository
         return $this->denormalizer->denormalize($data, $type);
     }
 
-    protected function marshal(object $data): array
-    {
-        $data = $this->normalizer->normalize($data, null, $this->getContext());
-        return $this->marshaler->marshalItem($data);
-    }
-
     public function add($entity)
     {
-        if ($entity instanceof Entity) {
-            $entity->setUpdatedAt(new DateTime());
-            if (!$entity->getCreatedAt()) {
-                $entity->setCreatedAt($entity->getUpdatedAt());
-            }
-        }
-
-        $this->addUpdateToUnitOfWork($entity);
+        $context = ['PK' => $entity->getId()];
+        $this->addUpdateToUnitOfWork($entity, $context);
     }
 
     protected function getByKeys(string $pk, string $sk): ?object
@@ -124,13 +97,13 @@ abstract class DynamoRepository
         }
     }
 
-    protected function addUpdateToUnitOfWork($item)
+    protected function addUpdateToUnitOfWork($update, array $context = [])
     {
-        $normalized = $this->normalizer->normalize($item, null, $this->getContext());
-        $normalized['PK'] = $this->getPK($item);
-        $normalized['SK'] = $this->getSK($item);
-        $normalized = array_merge($normalized, $this->getExtraAttributes());
-        $this->putItems[] = $this->marshaler->marshalItem($normalized);
+        $normalized = $this->normalizer->normalize($update, EntityNormalizer::FORMAT, $context);
+        foreach($normalized as $array) {
+            $item = $this->marshaler->marshalItem($array);
+            $this->putItems []= $item;
+        }
     }
 
     public function getUpdateItems(): array

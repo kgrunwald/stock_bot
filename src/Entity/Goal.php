@@ -14,7 +14,7 @@ class Goal extends Entity
 
     public function __construct()
     {
-        $this->id = uniqid('G#');
+        $this->id = uniqid('G:');
         $this->holdings = [];
         $this->balance = 0;
     }

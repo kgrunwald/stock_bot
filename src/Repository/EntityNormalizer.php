@@ -9,14 +9,11 @@ use App\Entity\Plan;
 use App\Entity\Security;
 use App\Entity\User;
 use DateTime;
-use Exception;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\SerializerAwareInterface;
 use Symfony\Component\Serializer\SerializerAwareTrait;
@@ -55,15 +52,11 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
         Security::class => [DynamoRepository::GSI2 => 'security']
     ];
 
-    private ArrayDenormalizer $arrayDenormalizer;
-    private GetSetMethodNormalizer $g;
-
     public function __construct(LoggerInterface $logger, ObjectNormalizer $normalizer)
     {
 
         $this->logger = $logger;
         $this->normalizer = $normalizer;
-        // $this->arrayDenormalizer = new ArrayDenormalizer();
     }
 
     public function normalize($object, string $format = null, array $context = [])
@@ -91,10 +84,7 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
         }
 
         $relations = self::relations[get_class($object)] ?? [];
-        if (!isset($context[AbstractNormalizer::IGNORED_ATTRIBUTES])) {
-            $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = [];
-        }
-        $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = array_merge($context[AbstractNormalizer::IGNORED_ATTRIBUTES], $relations);
+        $context[AbstractNormalizer::IGNORED_ATTRIBUTES] = array_merge($context[AbstractNormalizer::IGNORED_ATTRIBUTES] ?? [], $relations);
         $context['SK'] = $context['SK'] . $object->getId();
 
         if ($object instanceof Entity) {
@@ -121,6 +111,10 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
         $normalized['PK'] = $context['PK'];
         $normalized['SK'] = $context['SK'];
         $normalized['_t'] = get_class($object);
+
+        if ($context['userId'] ?? false) {
+            $normalized['userId'] = $context['userId'];
+        }
 
         $entities[] = $normalized;
 

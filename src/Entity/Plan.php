@@ -10,7 +10,7 @@ class Plan extends Entity
 
     public function __construct()
     {
-        $this->id = uniqid('P#');
+        $this->id = uniqid('P:');
         $this->allocations = [];
     }
 

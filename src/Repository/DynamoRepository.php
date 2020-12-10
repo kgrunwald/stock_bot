@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Entity;
+use App\Entity\User;
 use Aws\DynamoDb\DynamoDbClient;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
@@ -38,27 +39,37 @@ abstract class DynamoRepository
 
     protected function unmarshal(Result $result): object
     {
-       return $this->unmarshalItem($result['Item']);
+        if (isset($result['Item'])) {
+            return $this->unmarshalItem($result['Item']);
+        }
+
+        $objects = [];
+        foreach ($result['Items'] as $item) {
+            $objects[] = $this->marshaler->unmarshalItem($item);
+        }
+
+        return $this->denormalizer->denormalize($objects, '', EntityNormalizer::FORMAT);
     }
 
     protected function unmarshalArray(Result $result): array
     {
         $objects = [];
         foreach ($result['Items'] as $item) {
-            $objects []= $this->unmarshalItem($item);
+            $objects[] = $this->unmarshalItem($item);
         }
 
         return $objects;
     }
 
-    protected function unmarshalItem(array $item) {
+    protected function unmarshalItem(array $item)
+    {
         $data = $this->marshaler->unmarshalItem($item);
         return $this->denormalizer->denormalize($data, $data['_t']);
     }
 
-    public function add($entity)
+    public function add($entity, ?User $user = null)
     {
-        $context = ['PK' => $entity->getId()];
+        $context = ['PK' => $entity->getId(), 'userId' => $user && $user->getId()];
         $this->addUpdateToUnitOfWork($entity, $context);
     }
 
@@ -93,9 +104,9 @@ abstract class DynamoRepository
     protected function addUpdateToUnitOfWork($update, array $context = [])
     {
         $normalized = $this->normalizer->normalize($update, EntityNormalizer::FORMAT, $context);
-        foreach($normalized as $array) {
+        foreach ($normalized as $array) {
             $item = $this->marshaler->marshalItem($array);
-            $this->putItems []= $item;
+            $this->putItems[] = $item;
         }
     }
 

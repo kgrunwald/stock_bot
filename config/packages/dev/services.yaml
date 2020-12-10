@@ -1,0 +1,2 @@
+parameters:
+    app.alpaca.client_secret: '%env(ALPACA_OAUTH_CLIENT_SECRET)%'

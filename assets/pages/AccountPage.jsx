@@ -13,7 +13,6 @@ const AccountPage = ({history}) => {
     const [goal, setGoal] = useState(null);
 
     async function handleGoalClick(id) {
-        await setGoal(goals[id - 1]);
         history.push(`/account/goal/${id}`);
     }
 
@@ -39,7 +38,7 @@ const AccountPage = ({history}) => {
                 </Sider>
                 <Switch>
                     <Route exact path="/account" component={() => <Home goals={goals} />} />
-                    <Route path="/account/goal" component={() => <GoalDetail goal={goal} onBack={() => history.goBack()} />} />
+                    <Route path="/account/goal/:goalId" component={() => <GoalDetail goal={goal} onBack={() => history.goBack()} />} />
                 </Switch>
             </Layout>
         </Layout>

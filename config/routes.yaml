@@ -42,6 +42,11 @@ getGoals:
   methods: [GET]
   controller: App\Controller\DefaultController::getAllGoals
 
+getGoal:
+  path: /api/goals/{goalId}
+  methods: [GET]
+  controller: App\Controller\DefaultController::getGoalById
+
 home:
   path: /{reactRouting}
   controller: App\Controller\DefaultController::index

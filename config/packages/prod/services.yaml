@@ -1,2 +1,0 @@
-parameters:
-    app.alpaca.client_secret: '%env(ssm:ALPACA_OAUTH_CLIENT_SECRET)%'

@@ -39,7 +39,6 @@ class AddGoalCommand extends Command
         $user = $this->dbContext->users->getByAccountId('e6e4ec5b-5c3e-409b-be2b-ab8b6a0f2e72');
         $this->logger->info('plan', ['e' => $plan]);
         $goal = new Goal();
-        $goal->setId('G#5fd04a81e9383');
         $goal->setCreatedAt(new DateTime());
         $goal->setName('Banana Stand');
         $goal->setPlan($plan);
@@ -64,7 +63,7 @@ class AddGoalCommand extends Command
         $goal->addHolding($tqqqHolding);
         $goal->addHolding($aggHolding);
 
-        $this->dbContext->goals->add($goal);
+        $this->dbContext->goals->add($goal, $user);
         $this->dbContext->commit();
 
         return Command::SUCCESS;

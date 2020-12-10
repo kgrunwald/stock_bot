@@ -82,6 +82,19 @@ resources:
                                 Forward: none
                         ViewerProtocolPolicy: redirect-to-https
                         Compress: true
+        SessionsTable:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                TableName: jk-stockbot-sessions
+                AttributeDefinitions:
+                    - AttributeName: id
+                      AttributeType: S
+                KeySchema:
+                    - AttributeName: id
+                      KeyType: HASH
+                ProvisionedThroughput:
+                    ReadCapacityUnits: 1
+                    WriteCapacityUnits: 1
         Database:
             Type: AWS::DynamoDB::Table
             Properties:
@@ -159,7 +172,14 @@ resources:
                       - dynamodb:Query
                       - dynamodb:UpdateItem
                       - dynamodb:UpdateTimeToLive
-                      Resource: !GetAtt Database.Arn
+                      Resource: 
+                      - !Join ["", [!GetAtt Database.Arn, '*'] ]
+                      - !GetAtt SessionsTable.Arn
+                    - Effect: Allow
+                      Action:
+                      - ssm:PutParameter
+                      - ssm:GetParameter
+                      Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/jk-stockbot*'
 
 functions:
     api:
@@ -182,6 +202,7 @@ functions:
 # Exclude files from deployment
 package:
     exclude:
+        - .env.*
         - 'node_modules/**'
         - 'tests/**'
         - 'assets/**'

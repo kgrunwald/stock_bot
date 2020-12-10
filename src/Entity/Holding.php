@@ -13,7 +13,7 @@ class Holding extends Entity
 
     public function __construct()
     {
-        $this->id = uniqid('H#');
+        $this->id = uniqid('H:');
     }
 
     public function getSecurity(): Security

@@ -61,6 +61,12 @@ class DefaultController extends AbstractController
         return $this->json($goals);
     }
 
+    public function getGoalById(string $goalId)
+    {
+        $goal = $this->userService->getGoalById($goalId);
+        return $this->json($goal);
+    }
+
     public function getUserHandler(): Response {
         return $this->json($this->getUser());
     }

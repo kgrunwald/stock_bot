@@ -4,7 +4,6 @@ namespace App\Repository;
 
 use App\Entity\Goal;
 use App\Entity\User;
-use Aws\DynamoDb\Exception\DynamoDbException;
 
 class GoalRepository extends DynamoRepository
 {
@@ -13,26 +12,39 @@ class GoalRepository extends DynamoRepository
         return $this->getByKeys($id, $id);
     }
 
-    public function getAllGoalsForUser(User $user): array
+    public function getUserGoalById(User $user, string $goalId): ?Goal
     {
-        try {
-            $params = [
-                ':userId' => $user->getId(),
-                ':prefix' => 'G#'
-            ];
+        $params = [
+            ':goalId' => $goalId,
+            ':userId' => $user->getId()
+        ];
 
-            $result = $this->dbClient->query([
-                'TableName' => DynamoRepository::TABLENAME,
-                'IndexName' => DynamoRepository::GSI1,
-                'KeyConditionExpression' => '#pk = :userId and begins_with(#sk, :prefix)',
-                'ExpressionAttributeNames' => ['#pk' => 'GSI1', '#sk' => 'PK'],
-                'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
-            ]);
+        $result = $this->dbClient->query([
+            'TableName' => DynamoRepository::TABLENAME,
+            'KeyConditionExpression' => '#pk = :goalId',
+            'FilterExpression' => '#userId = :userId',
+            'ExpressionAttributeNames' => ['#pk' => 'PK', '#userId' => 'userId'],
+            'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
+        ]);
 
-            return $this->unmarshalArray($result);
-        } catch (DynamoDbException $e) {
-            $this->logger->warning('Error getting goals', ['e' => $e->getMessage()]);
-            return [];
-        }
+        return $this->unmarshal($result);
+    }
+
+    public function getUserGoals(User $user): array
+    {
+        $params = [
+            ':userId' => $user->getId(),
+            ':prefix' => 'G:'
+        ];
+
+        $result = $this->dbClient->query([
+            'TableName' => DynamoRepository::TABLENAME,
+            'IndexName' => DynamoRepository::GSI1,
+            'KeyConditionExpression' => '#pk = :userId and begins_with(#sk, :prefix)',
+            'ExpressionAttributeNames' => ['#pk' => 'GSI1', '#sk' => 'PK'],
+            'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
+        ]);
+
+        return $this->unmarshalArray($result);
     }
 }

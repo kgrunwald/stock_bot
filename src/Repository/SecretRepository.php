@@ -3,7 +3,6 @@
 namespace App\Repository;
 
 use App\Entity\User;
-use Aws\Ssm\Exception\SsmException;
 use Aws\Ssm\SsmClient;
 use GuzzleHttp\Promise\Promise;
 use Psr\Log\LoggerInterface;

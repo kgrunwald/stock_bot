@@ -7,11 +7,6 @@ use Aws\DynamoDb\Exception\DynamoDbException;
 
 class PlanRepository extends DynamoRepository
 {
-    public function getType()
-    {
-        return Plan::class;
-    }
-
     public function getById(string $id): ?Plan
     {
         return $this->getByKeys($id, $id);

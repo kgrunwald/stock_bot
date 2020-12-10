@@ -5,16 +5,9 @@ namespace App\Repository;
 use App\Entity\Goal;
 use App\Entity\User;
 use Aws\DynamoDb\Exception\DynamoDbException;
-use DateTime;
 
 class GoalRepository extends DynamoRepository
 {
-
-    public function getType()
-    {
-        return Goal::class;
-    }
-
     public function getById(string $id): ?Goal
     {
         return $this->getByKeys($id, $id);

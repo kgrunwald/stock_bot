@@ -73,6 +73,17 @@ abstract class DynamoRepository
         $this->addUpdateToUnitOfWork($entity, $context);
     }
 
+    public function delete($entity, $child = null)
+    {
+        $this->dbClient->deleteItem([
+            'TableName' => self::TABLENAME,
+            'Key' => $this->marshaler->marshalItem([
+                'PK' => $entity->getId(),
+                'SK' => $child ? $child->getId() : $entity->getId(),
+            ])
+        ]);
+    }
+
     protected function getByKeys(string $pk, string $sk): ?object
     {
         $key = $this->marshaler->marshalItem([

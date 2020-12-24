@@ -14,6 +14,9 @@ class Holding extends Entity
     public function __construct()
     {
         $this->id = uniqid('H:');
+        $this->quantity = 0;
+        $this->value = 0;
+        $this->costBasis = 0;
     }
 
     public function getSecurity(): Security
@@ -51,25 +54,25 @@ class Holding extends Entity
         return $this;
     }
 
-    public function getValue(): float
+    public function getValue(): int
     {
         return $this->value;
     }
 
-    public function setCostBasis(float $basis): self
+    public function setValue(int $value): self
+    {
+        $this->value = $value;
+        return $this;
+    }
+
+    public function setCostBasis(int $basis): self
     {
         $this->costBasis = $basis;
         return $this;
     }
 
-    public function getCostBasis(): ?float
+    public function getCostBasis(): ?int
     {
         return $this->costBasis;
-    }
-
-    public function setValue(float $value): self
-    {
-        $this->value = $value;
-        return $this;
     }
 }

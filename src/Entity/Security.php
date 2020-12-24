@@ -4,6 +4,8 @@ namespace App\Entity;
 
 class Security
 {
+    const CASH = 'Cash';
+
     private $name;
     private $symbol;
     private $type;

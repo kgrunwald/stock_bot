@@ -122,7 +122,9 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
         foreach ($relations as $relationKey) {
             $method = 'get' . ucfirst($relationKey);
             $entity = $object->$method();
-            $entities = array_merge($entities, $this->normalizeEntity($entity, $context));
+            if ($entity) {
+                $entities = array_merge($entities, $this->normalizeEntity($entity, $context));
+            }
         }
 
         return $entities;
@@ -130,6 +132,8 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
 
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
+        $context = array_merge($context, ['disable_type_enforcement' => true]);
+        
         // if type contains '[]', then denormalize as an array like normal
         if (strpos($type, '[]') > 0) {
             return $this->denormalizeArray($data, $type, $context);

@@ -47,6 +47,9 @@ services:
             $config:
                 table_name: jk-stockbot-sessions
 
+    App\Repository\LockRepository:
+        public: true
+        
     # App\Repository\EntityNormalizer:
         # tags: []
     #         - name: serializer.normalizer

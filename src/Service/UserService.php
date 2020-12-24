@@ -33,7 +33,7 @@ class UserService
         
         Utils::all([
             $this->dbContext->commitAsync(), 
-            $this->secretRepo->addToken($this->user, $request->token)
+            $this->secretRepo->setCredentials($this->user, $request->token)
         ])->wait();
     }
 

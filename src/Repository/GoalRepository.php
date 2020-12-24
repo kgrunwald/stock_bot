@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Goal;
+use App\Entity\Order;
 use App\Entity\User;
 
 class GoalRepository extends DynamoRepository
@@ -11,7 +12,7 @@ class GoalRepository extends DynamoRepository
     {
         return $this->getByKeys($id, $id);
     }
-
+    
     public function getUserGoalById(User $user, string $goalId): ?Goal
     {
         $params = [
@@ -46,5 +47,11 @@ class GoalRepository extends DynamoRepository
         ]);
 
         return $this->unmarshalArray($result);
+    }
+
+    public function removeOrder(Goal $goal, Order $order)
+    {
+        $this->delete($goal, $order);
+        $goal->removeOrder($order);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Goal;
 use App\Entity\Order;
+use App\Entity\Plan;
 use App\Entity\User;
 
 class GoalRepository extends DynamoRepository
@@ -42,6 +43,24 @@ class GoalRepository extends DynamoRepository
             'TableName' => DynamoRepository::TABLENAME,
             'IndexName' => DynamoRepository::GSI1,
             'KeyConditionExpression' => '#pk = :userId and begins_with(#sk, :prefix)',
+            'ExpressionAttributeNames' => ['#pk' => 'GSI1', '#sk' => 'PK'],
+            'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
+        ]);
+
+        return $this->unmarshalArray($result);
+    }
+
+    public function getAllByPlan(Plan $plan): array
+    {
+        $params = [
+            ':planId' => $plan->getId(),
+            ':prefix' => 'G:'
+        ];
+
+        $result = $this->dbClient->query([
+            'TableName' => DynamoRepository::TABLENAME,
+            'IndexName' => DynamoRepository::GSI1,
+            'KeyConditionExpression' => '#pk = :planId and begins_with(#sk, :prefix)',
             'ExpressionAttributeNames' => ['#pk' => 'GSI1', '#sk' => 'PK'],
             'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
         ]);

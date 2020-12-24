@@ -33,4 +33,32 @@ class PlanRepository extends DynamoRepository
             return [];
         }
     }
+
+    public function getByName(string $name): ?Plan
+    {
+        try {
+            $params = [
+                ':pk' => 'plan',
+                ':name' => $name
+            ];
+
+            $result = $this->dbClient->query([
+                'TableName' => DynamoRepository::TABLENAME,
+                'IndexName' => DynamoRepository::GSI2,
+                'KeyConditionExpression' => '#pk = :pk',
+                'FilterExpression' => '#name = :name',
+                'ExpressionAttributeNames'=> [ '#pk' => 'GSI2', '#name' => 'name' ],
+                'ExpressionAttributeValues'=> $this->marshaler->marshalItem($params)
+            ]);
+
+            $arr = $this->unmarshalArray($result);
+            if (count($arr) === 1) {
+                return $arr[0];
+            }
+        } catch(DynamoDbException $e) {
+            $this->logger->warning('Error getting plans', ['e' => $e->getMessage()]);
+        }
+
+        return null;
+    }
 }

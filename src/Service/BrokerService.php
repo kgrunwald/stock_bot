@@ -64,6 +64,39 @@ class BrokerService
         return $this->sendRequest('GET', '/v2/orders/'.$order->getExternalId());
     }
 
+    public function getOrderToBuyAmount(Holding $holding, int $amount)
+    {
+        $price = $this->getCurrentAsk($holding->getSecurity());
+        $qty = intval(floor($amount / $price));
+
+        if ($qty == 0.) {
+            return ['qty' => 0, 'limit' => 99999999, 'side' => Order::SIDE_BUY];
+        }
+
+        return [
+            'qty' => $qty,
+            'limit' => floor($amount / $qty),
+            'side' => Order::SIDE_BUY
+        ];
+    }
+
+    public function getOrderToSellAmount(Holding $holding, int $amount)
+    {
+        $price = $this->getCurrentBid($holding->getSecurity());
+        $requiredQty = intval(ceil($amount / $price));
+        $qty = min($requiredQty, $holding->getQuantity());
+
+        if ($qty !== 0 && $qty === $requiredQty) {
+            $price = ceil($amount / $qty);
+        }
+
+        return [
+            'qty' => $qty,
+            'limit' => $price,
+            'size' => Order::SIDE_SELL
+        ];
+    }
+
     public function sendRequest(string $method, string $url, ?array $body = null)
     {
         $user = $this->security->getUser();

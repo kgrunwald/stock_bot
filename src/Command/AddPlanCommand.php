@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use App\Entity\Allocation;
+use App\Entity\NineSigPlan;
 use App\Entity\Plan;
 use App\Repository\DbContext;
 use Symfony\Component\Console\Command\Command;
@@ -30,7 +31,7 @@ class AddPlanCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $plan = new Plan();
-        $plan->setName('9% Signal');
+        $plan->setName(NineSigPlan::NAME);
         $tqqq = new Allocation();
         $tqqq->setSecurity($this->dbContext->securities->getBySymbol('TQQQ'));
         $tqqq->setPercentage(60);

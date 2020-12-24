@@ -10,6 +10,7 @@ use App\Entity\Security;
 use App\Handler\SequentialOrderHandler;
 use App\Repository\DbContext;
 use App\Repository\GoalRepository;
+use App\Security\SecurityService;
 use App\Service\BrokerService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -27,6 +28,7 @@ class SequentialOrderHandlerTest extends TestCase
 
     public function setUp()
     {
+        $this->security = $this->createMock(SecurityService::class);
         $this->bus = $this->createMock(MessageBusInterface::class);
         $this->dbContext = $this->createMock(DbContext::class);
         $this->brokerService = $this->createMock(BrokerService::class);
@@ -36,7 +38,7 @@ class SequentialOrderHandlerTest extends TestCase
 
         $this->goal = new Goal();
 
-        $this->handler = new SequentialOrderHandler($this->bus, $this->dbContext, $this->brokerService, $this->lockInterface);
+        $this->handler = new SequentialOrderHandler($this->security, $this->bus, $this->dbContext, $this->brokerService, $this->lockInterface);
     }
 
     public function testSubmitOrder()

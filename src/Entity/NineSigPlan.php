@@ -4,6 +4,7 @@ namespace App\Entity;
 
 class NineSigPlan extends Plan
 {
+    const NAME = '9% Signal';
     const STOCK_FUND = 'TQQQ';
     const BOND_FUND = 'AGG';
 

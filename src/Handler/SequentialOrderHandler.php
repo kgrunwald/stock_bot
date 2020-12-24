@@ -9,6 +9,7 @@ use App\Entity\Security;
 use App\Handler\Messages\ReconcileGoalMessage;
 use App\Handler\Messages\SubmitOrdersMessage;
 use App\Repository\DbContext;
+use App\Security\SecurityService;
 use App\Service\BrokerService;
 use Exception;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -19,9 +20,11 @@ class SequentialOrderHandler
     private DbContext $dbContext;
     private BrokerService $brokerService;
     private LockInterface $lockInterface;
+    private SecurityService $securityService;
 
-    public function __construct(MessageBusInterface $bus, DbContext $dbContext, BrokerService $brokerService, LockInterface $lockInterface)
+    public function __construct(SecurityService $securityService, MessageBusInterface $bus, DbContext $dbContext, BrokerService $brokerService, LockInterface $lockInterface)
     {
+        $this->securityService = $securityService;
         $this->dbContext = $dbContext;
         $this->bus = $bus;
         $this->brokerService = $brokerService;
@@ -31,6 +34,9 @@ class SequentialOrderHandler
     public function __invoke(SubmitOrdersMessage $message)
     {
         $goal = $this->dbContext->goals->getById($message->goalId);
+        $user = $this->dbContext->users->getByAccountId($goal->getUserId());
+        $this->securityService->setUser($user);
+        
         $lock = $this->lockInterface->acquire($goal);
 
         $pending = false;

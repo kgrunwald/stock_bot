@@ -12,6 +12,7 @@ use App\Repository\DbContext;
 use App\Security\SecurityService;
 use App\Service\BrokerService;
 use Exception;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class SequentialOrderHandler
@@ -21,20 +22,23 @@ class SequentialOrderHandler
     private BrokerService $brokerService;
     private LockInterface $lockInterface;
     private SecurityService $securityService;
+    private LoggerInterface $logger;
 
-    public function __construct(SecurityService $securityService, MessageBusInterface $bus, DbContext $dbContext, BrokerService $brokerService, LockInterface $lockInterface)
+    public function __construct(SecurityService $securityService, MessageBusInterface $bus, DbContext $dbContext, BrokerService $brokerService, LockInterface $lockInterface, LoggerInterface $logger)
     {
         $this->securityService = $securityService;
         $this->dbContext = $dbContext;
         $this->bus = $bus;
         $this->brokerService = $brokerService;
         $this->lockInterface = $lockInterface;
+        $this->logger = $logger;
     }
 
     public function __invoke(SubmitOrdersMessage $message)
     {
-        $goal = $this->dbContext->goals->getById($message->goalId);
-        $user = $this->dbContext->users->getByAccountId($goal->getUserId());
+        $user = $this->dbContext->users->getByAccountId($message->userId);
+        $goal = $this->dbContext->goals->getById($user, $message->goalId);
+
         $this->securityService->setUser($user);
         
         $lock = $this->lockInterface->acquire($goal);
@@ -87,13 +91,20 @@ class SequentialOrderHandler
 
         if ($order->getQty() === 0 || $order->getLimitPrice() === 0) {
             $this->dbContext->goals->removeOrder($goal, $order);
-            return;
+            return false;
+        }
+
+        $maxValue = $order->getQty() * $order->getLimitPrice();
+        if ($goal->cashBalance() < $maxValue) {
+            $this->logger->warning('Order is for more than available cash', ['order' => $order, 'cash' => $goal->cashBalance()]);
+            return false;
         }
 
         $res = $this->brokerService->submitLimitOrder($order);
         $order->setExternalId($res['id']);
 
         $this->dbContext->goals->add($goal);
+        return true;
     }
 
     public function calculateOrderQuantityFromCash(Goal $goal, Order $order)

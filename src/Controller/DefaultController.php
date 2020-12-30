@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\DTO\RegisterUserRequest;
 use App\Service\UserService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,13 +19,15 @@ class DefaultController extends AbstractController
     private ValidatorInterface $validator;
     private SerializerInterface $serializer;
     private UserService $userService;
+    private LoggerInterface $logger;
 
-    public function __construct(RouterInterface $router, ValidatorInterface $validator, SerializerInterface $serializer, UserService $userService)
+    public function __construct(RouterInterface $router, ValidatorInterface $validator, SerializerInterface $serializer, UserService $userService, LoggerInterface $logger)
     {
         $this->router = $router;
         $this->validator = $validator;
         $this->serializer = $serializer;
         $this->userService = $userService;
+        $this->logger = $logger;
     }
 
     public function index()

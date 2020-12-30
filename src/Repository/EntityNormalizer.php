@@ -133,22 +133,24 @@ class EntityNormalizer implements ContextAwareNormalizerInterface, ContextAwareD
     public function denormalize($data, string $type, string $format = null, array $context = [])
     {
         $context = array_merge($context, ['disable_type_enforcement' => true]);
-        
-        // if type contains '[]', then denormalize as an array like normal
-        if (strpos($type, '[]') > 0) {
-            return $this->denormalizeArray($data, $type, $context);
-        }
+
+        $objs = [];
 
         foreach ($data as $element) {
-            if ($element['SK'] === $element['PK']) {
+            $parts = explode('/', $element['SK']);
+            if (count($parts) === 1) {
                 $denormalized = $this->denormalizeObject($element, $element['_t'], $context);
-                break;
+                $this->denormalizeChildren($denormalized, $data, $context);
+                $objs[] = $denormalized;
             }
         }
 
-        $this->denormalizeChildren($denormalized, $data, $context);
+        // if type contains '[]', then denormalize as an array like normal
+        if (strpos($type, '[]') >= 0) {
+            return $objs;
+        }
 
-        return $denormalized;
+        return $objs[0];
     }
 
     private function denormalizeChildren($parent, $data, $context)

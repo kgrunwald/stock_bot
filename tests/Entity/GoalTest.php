@@ -5,11 +5,13 @@ namespace App\Tests\Entity;
 use App\Entity\Goal;
 use App\Entity\Order;
 use App\Entity\Security;
-use Exception;
 use PHPUnit\Framework\TestCase;
 
 class GoalTest extends TestCase
 {
+    /**
+     * @expectedException \Exception
+     */
     public function testMultipleOrdersForSameSecurity() 
     {
         $tqqq = new Security();
@@ -23,12 +25,6 @@ class GoalTest extends TestCase
         $o2 = new Order();
         $o2->setSecurity($tqqq);
 
-        try {
-            $g->addOrder($o2);
-        } catch (Exception $e) {
-            $caught = true;
-        }
-
-        $this->assertTrue($caught);
+        $g->addOrder($o2);
     }
 }

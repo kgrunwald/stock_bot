@@ -9,9 +9,23 @@ use App\Entity\User;
 
 class GoalRepository extends DynamoRepository
 {
-    public function getById(string $id): ?Goal
+    public function getById(User $user, string $id): ?Goal
     {
-        return $this->getByKeys($id, $id);
+        return $this->getByKeys($user->getId(), $id);
+    }
+
+    public function add($entity, array $context = [])
+    {
+        assert(false, 'Call to unsupported method. Use addGoal');
+    }
+
+    public function addGoal(User $user, Goal $goal)
+    {
+        $context = [
+            'userId' => $user->getId(),
+            'PK' => $user->getId()
+        ];
+        return $this->addUpdateToUnitOfWork($goal, $context);
     }
     
     public function getUserGoalById(User $user, string $goalId): ?Goal
@@ -23,9 +37,8 @@ class GoalRepository extends DynamoRepository
 
         $result = $this->dbClient->query([
             'TableName' => DynamoRepository::TABLENAME,
-            'KeyConditionExpression' => '#pk = :goalId',
-            'FilterExpression' => '#userId = :userId',
-            'ExpressionAttributeNames' => ['#pk' => 'PK', '#userId' => 'userId'],
+            'KeyConditionExpression' => '#pk = :userId and begins_with(#sk, :goalId)',
+            'ExpressionAttributeNames' => ['#pk' => 'PK', '#sk' => 'SK'],
             'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
         ]);
 
@@ -41,9 +54,8 @@ class GoalRepository extends DynamoRepository
 
         $result = $this->dbClient->query([
             'TableName' => DynamoRepository::TABLENAME,
-            'IndexName' => DynamoRepository::GSI1,
             'KeyConditionExpression' => '#pk = :userId and begins_with(#sk, :prefix)',
-            'ExpressionAttributeNames' => ['#pk' => 'GSI1', '#sk' => 'PK'],
+            'ExpressionAttributeNames' => ['#pk' => 'PK', '#sk' => 'SK'],
             'ExpressionAttributeValues' => $this->marshaler->marshalItem($params)
         ]);
 

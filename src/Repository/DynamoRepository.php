@@ -2,13 +2,10 @@
 
 namespace App\Repository;
 
-use App\Entity\Entity;
-use App\Entity\User;
 use Aws\DynamoDb\DynamoDbClient;
 use Aws\DynamoDb\Exception\DynamoDbException;
 use Aws\DynamoDb\Marshaler;
 use Aws\Result;
-use DateTime;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -43,22 +40,17 @@ abstract class DynamoRepository
             return $this->unmarshalItem($result['Item']);
         }
 
-        $objects = [];
-        foreach ($result['Items'] as $item) {
-            $objects[] = $this->marshaler->unmarshalItem($item);
-        }
-
-        return $this->denormalizer->denormalize($objects, '', EntityNormalizer::FORMAT);
+        return $this->unmarshalArray($result)[0];
     }
 
     protected function unmarshalArray(Result $result): array
     {
         $objects = [];
         foreach ($result['Items'] as $item) {
-            $objects[] = $this->unmarshalItem($item);
+            $objects[] = $this->marshaler->unmarshalItem($item);
         }
 
-        return $objects;
+        return $this->denormalizer->denormalize($objects, '[]', EntityNormalizer::FORMAT);
     }
 
     protected function unmarshalItem(array $item)
@@ -67,9 +59,9 @@ abstract class DynamoRepository
         return $this->denormalizer->denormalize($data, $data['_t']);
     }
 
-    public function add($entity, ?User $user = null)
+    public function add($entity, array $context = [])
     {
-        $context = ['PK' => $entity->getId(), 'userId' => $user && $user->getId()];
+        $context['PK'] = $entity->getId();
         $this->addUpdateToUnitOfWork($entity, $context);
     }
 

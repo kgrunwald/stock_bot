@@ -10,7 +10,7 @@ class NineSigPlan extends Plan
 
     private $target;
 
-    public function getTarget(): int
+    public function getTarget(): ?int
     {
         return $this->target;
     }
@@ -19,5 +19,10 @@ class NineSigPlan extends Plan
     {
         $this->target = $target;
         return $this;
+    }
+
+    public function getName(): string
+    {
+        return self::NAME;
     }
 }

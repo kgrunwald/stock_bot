@@ -13,6 +13,7 @@ class SecurityService
     public function __construct(Security $security)
     {
         $this->security = $security;
+        $this->user = null;
     }
 
     public function getUser(): ?User

@@ -3,6 +3,7 @@
 namespace App\Tests\Repository;
 
 use App\Entity\Goal;
+use App\Entity\User;
 use App\Repository\DbContext;
 use App\Repository\LockRepository;
 use DateInterval;
@@ -12,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 class LockRepositoryTest extends WebTestCase
 {
     private static ?Goal $g = null;
+    private static ?User $user = null;
+
     public function setUp()
     {
         self::bootKernel();
@@ -25,8 +28,10 @@ class LockRepositoryTest extends WebTestCase
         $lockRepo = static::$container->get(LockRepository::class);
         $lockRepo->releaseEntity(static::goal());
         
+        static::$user = new User();
+
         $dbContext = static::$container->get(DbContext::class);
-        $dbContext->goals->add(static::goal());
+        $dbContext->goals->addGoal(static::$user, static::goal());
         $dbContext->commit();
     }
 

@@ -13,17 +13,11 @@ use App\Repository\GoalRepository;
 use App\Security\SecurityService;
 use App\Service\BrokerService;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 class SequentialOrderHandlerTest extends TestCase
 {
-    // private BrokerService $brokerService;
-    // private MessageBusInterface $bus;
-    // private DbContext $dbContext;
-    // private LockInterface $lockInterface;
-    // private GoalRepository $goalRepo;
-    // private SequentialOrderHandler $handler;
-
     private Goal $goal;
 
     public function setUp()
@@ -35,10 +29,25 @@ class SequentialOrderHandlerTest extends TestCase
         $this->lockInterface = $this->createMock(LockInterface::class);
         $this->goalRepo = $this->createMock(GoalRepository::class);
         $this->dbContext->goals = $this->goalRepo;
+        $logger = $this->createMock(LoggerInterface::class);
 
         $this->goal = new Goal();
 
-        $this->handler = new SequentialOrderHandler($this->security, $this->bus, $this->dbContext, $this->brokerService, $this->lockInterface);
+        $this->handler = new SequentialOrderHandler($this->security, $this->bus, $this->dbContext, $this->brokerService, $this->lockInterface, $logger);
+    }
+
+    public function testSubmitOrderNoCash()
+    {
+        $security = new Security();
+        $security->setSymbol('TQQQ');
+        $order = new Order();
+        $order->setQty(1);
+        $order->setLimitPrice(1);
+        $order->setSecurity($security);
+
+        $this->goal->addOrder($order);
+
+        $this->assertFalse($this->handler->submitOrder($this->goal, $order));
     }
 
     public function testSubmitOrder()
@@ -52,8 +61,11 @@ class SequentialOrderHandlerTest extends TestCase
 
         $this->goal->addOrder($order);
 
+        $cash = $this->goal->holdingBySymbol(Security::CASH);
+        $cash->setValue(1);
+
         $this->brokerService->expects($this->once())->method('submitLimitOrder')->with($order)->willReturn(['id' => 'testId']);
-        $this->handler->submitOrder($this->goal, $order);
+        $this->assertTrue($this->handler->submitOrder($this->goal, $order));
         $this->assertCount(1, $this->goal->getOrders());
         $this->assertEquals('testId', $this->goal->getOrders()[0]->getExternalId());
     }
